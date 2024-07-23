@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
-import Brush from '@strapi/icons/Brush';
+import { Pencil }  from '@strapi/icons';
 
-const PluginIcon = () => <Brush />;
+const PluginIcon = () => <Pencil />;
 
 export default PluginIcon;

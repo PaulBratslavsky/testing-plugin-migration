@@ -1,63 +1,70 @@
-import React, { useState } from "react";
+import PropTypes from "prop-types";
+
+import { useState } from "react";
 import {
   Table,
   Thead,
-  TFooter,
   Tbody,
   Tr,
   Td,
   Th,
-} from "@strapi/design-system/Table";
-import { Box } from "@strapi/design-system/Box";
-import { Flex } from "@strapi/design-system/Flex";
-import { Button } from "@strapi/design-system/Button";
-import { Typography } from "@strapi/design-system/Typography";
-import { IconButton } from "@strapi/design-system/IconButton";
-import { VisuallyHidden } from "@strapi/design-system/VisuallyHidden";
-import { BaseCheckbox } from "@strapi/design-system/BaseCheckbox";
-import { TextInput } from "@strapi/design-system/TextInput";
-import Pencil from "@strapi/icons/Pencil";
-import Trash from "@strapi/icons/Trash";
-import Plus from "@strapi/icons/Plus";
+  Box,
+  Flex,
+  Button,
+  Typography,
+  IconButton,
+  VisuallyHidden,
+  Checkbox,
+  Field,
+} from "@strapi/design-system";
+import { Pencil, Trash } from "@strapi/icons";
 
-function TodoCheckbox({ value, checkboxID, callback, disabled }) {
+function TodoCheckbox({ value, checkboxID, onChange, disabled }) {
   const [isChecked, setIsChecked] = useState(value);
 
   function handleChange() {
     setIsChecked(!isChecked);
-    {
-      callback && callback({ id: checkboxID, value: !isChecked });
+    if (onChange) {
+      onChange({ id: checkboxID, value: !isChecked });
     }
   }
 
   return (
-    <BaseCheckbox
-      checked={isChecked}
-      onChange={handleChange}
-      disabled={disabled}
-    />
+    <Checkbox checked={isChecked} onClick={handleChange} disabled={disabled} />
   );
 }
+
+TodoCheckbox.propTypes = {
+  value: PropTypes.bool,
+  checkboxID: PropTypes.string,
+  onChange: PropTypes.func,
+  disabled: PropTypes.bool,
+};
 
 function TodoInput({ value, onChange }) {
   return (
-    <TextInput
-      type="text"
-      aria-label="todo-input"
-      name="todo-input"
-      error={value.length > 40 ? "Text should be less than 40 characters" : ""}
-      onChange={onChange}
-      value={value}
-    />
+    <Field.Root
+      name="name"
+      error={value.length === 0 ? "Text cannot be empty" : ""}
+    >
+      <Field.Label>Todo text</Field.Label>
+      <Field.Input onChange={onChange} value={value} />
+      <Field.Error />
+    </Field.Root>
   );
 }
 
+TodoInput.propTypes = {
+  value: PropTypes.string,
+  onChange: PropTypes.func,
+};
+
 export default function TodoTable({
+  children,
   todoData,
   toggleTodo,
   deleteTodo,
   editTodo,
-  setShowModal,
 }) {
   return (
     <Box
@@ -71,9 +78,9 @@ export default function TodoTable({
         colCount={4}
         rowCount={10}
         footer={
-          <TFooter onClick={() => setShowModal(true)} icon={<Plus />}>
-            Add a todo
-          </TFooter>
+          <Box padding={4} background="neutral100">
+            {children}
+          </Box>
         }
       >
         <Thead>
@@ -99,7 +106,6 @@ export default function TodoTable({
         <Tbody>
           {todoData.map((todo) => {
             const [inputValue, setInputValue] = useState(todo.name);
-
             const [isEdit, setIsEdit] = useState(false);
 
             return (
@@ -123,7 +129,7 @@ export default function TodoTable({
                   <TodoCheckbox
                     value={todo.isDone}
                     checkboxID={todo.id}
-                    callback={toggleTodo}
+                    onChange={() => toggleTodo(todo.documentId)}
                     disabled={isEdit}
                   />
                 </Td>
@@ -132,27 +138,28 @@ export default function TodoTable({
                   {isEdit ? (
                     <Flex style={{ justifyContent: "end" }}>
                       <Button
-                        onClick={() => editTodo(todo.id, { name: inputValue })}
+                        onClick={() => editTodo(todo.documentId, { name: inputValue })}
                       >
                         Save
                       </Button>
                     </Flex>
                   ) : (
                     <Flex style={{ justifyContent: "end" }}>
-                      <IconButton
-                        onClick={() => setIsEdit(true)}
-                        label="Edit"
-                        noBorder
-                        icon={<Pencil />}
-                      />
-
                       <Box paddingLeft={1}>
                         <IconButton
-                          onClick={() => deleteTodo(todo)}
+                          label="Edit"
+                          onClick={() => setIsEdit(true)}
+                        >
+                          <Pencil />
+                        </IconButton>
+                      </Box>
+                      <Box paddingLeft={1}>
+                        <IconButton
                           label="Delete"
-                          noBorder
-                          icon={<Trash />}
-                        />
+                          onClick={() => deleteTodo(todo)}
+                        >
+                          <Trash />
+                        </IconButton>
                       </Box>
                     </Flex>
                   )}
@@ -165,3 +172,11 @@ export default function TodoTable({
     </Box>
   );
 }
+
+TodoTable.propTypes = {
+  children: PropTypes.node,
+  todoData: PropTypes.array,
+  toggleTodo: PropTypes.func,
+  deleteTodo: PropTypes.func,
+  editTodo: PropTypes.func,
+};

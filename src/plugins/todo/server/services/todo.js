@@ -2,25 +2,34 @@
 
 module.exports = ({ strapi }) => ({
   async find(query) {
-    return await strapi.entityService.findMany("plugin::todo.todo", query);
+    return await strapi.documents("plugin::todo.todo").findMany(query);
   },
 
   async delete(id) {
-    return await strapi.entityService.delete("plugin::todo.todo", id);
+    return await strapi.documents("plugin::todo.todo").delete({
+      documentId: id
+    });
   },
 
   async create(data) {
-    return await strapi.entityService.create("plugin::todo.todo", data);
+    return await strapi.documents("plugin::todo.todo").create(data);
   },
 
   async update(id, data) {
-    return await strapi.entityService.update("plugin::todo.todo", id, data);
+    return await strapi.documents("plugin::todo.todo").update({
+      documentId: id,
+      data
+    });
   },
 
   async toggle(id) {
-    const result = await strapi.entityService.findOne("plugin::todo.todo", id);
-    return await strapi.entityService.update("plugin::todo.todo", id, {
-      data: { isDone: !result.isDone },
+    const result = await strapi.documents("plugin::todo.todo").findOne({
+      documentId: id
+    });
+
+    return await strapi.documents("plugin::todo.todo").update({
+      documentId: id,
+      data: { isDone: !result.isDone }
     });
   },
 });

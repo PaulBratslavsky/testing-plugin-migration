@@ -1,8 +1,20 @@
-import { prefixPluginTranslations } from '@strapi/helper-plugin';
-import pluginPkg from '../../package.json';
+import pluginPkg from '../../package.json'
 import pluginId from './pluginId';
 import Initializer from './components/Initializer';
 import PluginIcon from './components/PluginIcon';
+
+
+const prefixPluginTranslations = (trad, pluginId) => {
+  if (!pluginId) {
+    throw new TypeError("pluginId can't be empty");
+  }
+  return Object.keys(trad).reduce((acc, current) => {
+    acc[`${pluginId}.${current}`] = trad[current];
+    return acc;
+  }, {});
+};
+
+export { prefixPluginTranslations };
 
 const name = pluginPkg.strapi.name;
 
@@ -16,7 +28,7 @@ export default {
         defaultMessage: name,
       },
       Component: async () => {
-        const component = await import(/* webpackChunkName: "[request]" */ './pages/App');
+        const component = await import(/* webpackChunkName: "[request]" */ './pages/App/index.jsx');
 
         return component;
       },
